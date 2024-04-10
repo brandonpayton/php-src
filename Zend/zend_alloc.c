@@ -1839,6 +1839,8 @@ static void zend_mm_free_huge(zend_mm_heap *heap, void *ptr ZEND_FILE_LINE_DC ZE
 /* Initialization */
 /******************/
 
+extern zend_mm_handlers wasm_memory_storage_struct;
+
 static zend_mm_heap *zend_mm_init(void)
 {
 	zend_mm_chunk *chunk = (zend_mm_chunk*)zend_mm_chunk_alloc_int(ZEND_MM_CHUNK_SIZE, ZEND_MM_CHUNK_SIZE);
@@ -1887,7 +1889,7 @@ static zend_mm_heap *zend_mm_init(void)
 	heap->use_custom_heap = ZEND_MM_CUSTOM_HEAP_NONE;
 #endif
 #if ZEND_MM_STORAGE
-	heap->storage = NULL;
+	heap->storage = &wasm_memory_storage_struct;
 #endif
 	heap->huge_list = NULL;
 	return heap;
