@@ -713,6 +713,14 @@ static void *zend_mm_chunk_alloc_int(size_t size, size_t alignment)
 
 static void *zend_mm_chunk_alloc(zend_mm_heap *heap, size_t size, size_t alignment)
 {
+	void* ptr = NULL;
+	if (posix_memalign(&ptr, alignment, size) == 0)
+	{
+		return ptr;
+	} else {
+		return NULL;
+	}
+
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
 		void *ptr = heap->storage->handlers.chunk_alloc(heap->storage, size, alignment);
@@ -725,6 +733,8 @@ static void *zend_mm_chunk_alloc(zend_mm_heap *heap, size_t size, size_t alignme
 
 static void zend_mm_chunk_free(zend_mm_heap *heap, void *addr, size_t size)
 {
+	free(addr);
+	return;
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
 		heap->storage->handlers.chunk_free(heap->storage, addr, size);
@@ -736,6 +746,7 @@ static void zend_mm_chunk_free(zend_mm_heap *heap, void *addr, size_t size)
 
 static int zend_mm_chunk_truncate(zend_mm_heap *heap, void *addr, size_t old_size, size_t new_size)
 {
+	return false;
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
 		if (heap->storage->handlers.chunk_truncate) {
@@ -755,6 +766,8 @@ static int zend_mm_chunk_truncate(zend_mm_heap *heap, void *addr, size_t old_siz
 
 static int zend_mm_chunk_extend(zend_mm_heap *heap, void *addr, size_t old_size, size_t new_size)
 {
+	return false;
+
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
 		if (heap->storage->handlers.chunk_extend) {
