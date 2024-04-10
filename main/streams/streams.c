@@ -1369,7 +1369,6 @@ PHPAPI int _php_stream_seek(php_stream *stream, zend_off_t offset, int whence)
 
 PHPAPI int _php_stream_set_option(php_stream *stream, int option, int value, void *ptrparam)
 {
-	fprintf(stderr, "_php_stream_set_option: mode: %x type: %x handle: %x option: %x value: %x ptr: %p\n", stream->mode, stream->ctx->type, stream->ctx->handle, option, value, ptrparam);
 	int ret = PHP_STREAM_OPTION_RETURN_NOTIMPL;
 
 	if (stream->ops->set_option) {

@@ -2315,17 +2315,13 @@ send_again:
 
 static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_SEND_ARRAY_SPEC_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
-	fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: start: %s\n", ZSTR_VAL(EX(call)->func->common.function_name));
 	USE_OPLINE
 	zval *args;
 
 	SAVE_OPLINE();
-	fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: before get args\n");
 	args = get_zval_ptr(opline->op1_type, opline->op1, BP_VAR_R);
-	fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: after get args\n");
 
 	if (UNEXPECTED(Z_TYPE_P(args) != IS_ARRAY)) {
-		fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: args not an array\n");
 		if ((opline->op1_type & (IS_VAR|IS_CV)) && Z_ISREF_P(args)) {
 			args = Z_REFVAL_P(args);
 			if (EXPECTED(Z_TYPE_P(args) == IS_ARRAY)) {
@@ -2337,7 +2333,6 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_SEND_ARRAY_SPEC_HANDLER(ZEND_O
 		FREE_OP(opline->op1_type, opline->op1.var);
 		HANDLE_EXCEPTION();
 	} else {
-		fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: args looks like an array\n");
 		uint32_t arg_num;
 		HashTable *ht;
 		zval *arg, *param;
@@ -2345,7 +2340,6 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_SEND_ARRAY_SPEC_HANDLER(ZEND_O
 send_array:
 		ht = Z_ARRVAL_P(args);
 		if (opline->op2_type != IS_UNUSED) {
-			fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: not handling named params\n");
 			/* We don't need to handle named params in this case,
 			 * because array_slice() is called with $preserve_keys == false. */
 			zval *op2 = get_zval_ptr(opline->op2_type, opline->op2, BP_VAR_R);
@@ -2353,10 +2347,7 @@ send_array:
 			uint32_t count = zend_hash_num_elements(ht);
 			zend_long len = zval_get_long(op2);
 
-			fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: %d skip, %d count, %ld len\n", skip, count, len);
-
 			if (len < 0) {
-				fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: len < 0\n");
 				len += (zend_long)(count - skip);
 			}
 			if (skip < count && len > 0) {
@@ -2402,19 +2393,14 @@ send_array:
 			}
 			FREE_OP(opline->op2_type, opline->op2.var);
 		} else {
-			fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: need to potentially handle named params\n");
 			zend_string *name;
 			zend_bool have_named_params;
 			zend_vm_stack_extend_call_frame(&EX(call), 0, zend_hash_num_elements(ht));
-			fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: after extend call stack frame\n");
-
 			arg_num = 1;
 			param = ZEND_CALL_ARG(EX(call), 1);
 			have_named_params = 0;
 			ZEND_HASH_FOREACH_STR_KEY_VAL(ht, name, arg) {
-				fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: foreach_str_key_val\n");
 				if (name) {
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: named arg: %s\n", ZSTR_VAL(name));
 					void *cache_slot[2] = {NULL, NULL};
 					have_named_params = 1;
 					param = zend_handle_named_arg(&EX(call), name, &arg_num, cache_slot);
@@ -2423,7 +2409,6 @@ send_array:
 						HANDLE_EXCEPTION();
 					}
 				} else if (have_named_params) {
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: incorrect presence of positional arg\n");
 					zend_throw_error(NULL,
 						"Cannot use positional argument after named argument");
 					FREE_OP(opline->op1_type, opline->op1.var);
@@ -2434,7 +2419,6 @@ send_array:
 				if (ARG_SHOULD_BE_SENT_BY_REF(EX(call)->func, arg_num)) {
 					if (UNEXPECTED(!Z_ISREF_P(arg))) {
 						if (!ARG_MAY_BE_SENT_BY_REF(EX(call)->func, arg_num)) {
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: warn about pass by value when ref wanted\n");
 							/* By-value send is not allowed -- emit a warning,
 							 * but still perform the call. */
 							zend_param_must_be_ref(EX(call)->func, arg_num);
@@ -2445,63 +2429,25 @@ send_array:
 					if (Z_ISREF_P(arg) &&
 					    !(EX(call)->func->common.fn_flags & ZEND_ACC_CALL_VIA_TRAMPOLINE)) {
 						/* don't separate references for __call */
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: don't separate refs\n");
 						arg = Z_REFVAL_P(arg);
 					}
 				}
 
 				if (EXPECTED(!must_wrap)) {
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_COPY: attempt\n");
-					//ZVAL_COPY(param, arg);
-					do {												
-						zval *_z1 = (param);								
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_COPY: assign param: %p\n", _z1);
-						const zval *_z2 = (arg);							
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_COPY: assign arg: %p\n", _z2);
-						zend_refcounted *_gc = Z_COUNTED_P(_z2);		
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_COPY: assign refcounted: %p\n", _gc);
-						uint32_t _t = Z_TYPE_INFO_P(_z2);				
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: assign type info: %d\n", _t);
-						//ZVAL_COPY_VALUE_EX(_z1, _z2, _gc, _t);			
-						//ZVAL_COPY_VALUE_EX(z = _z1, v = _z2, gc = _gc, t = _t);			
-						do {												
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: attempting to assign v->value.ww.w2 from v: %p\n", _z2);
-							uint32_t _w2 = _z2->value.ww.w2;					
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: assigned v->value.ww.w2\n");
-							Z_COUNTED_P(_z1) = _gc;							
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: assigned to counted z\n");
-							_z1->value.ww.w2 = _w2;							
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: assigned to z->value.ww.w2\n");
-							Z_TYPE_INFO_P(_z1) = _t;							
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: assigned type info: %d\n", _t);
-						} while (0);
-						fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: check whether refcounted\n");
-						if (Z_TYPE_INFO_REFCOUNTED(_t)) {				\
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: refcounted: adding ref\n");
-							GC_ADDREF(_gc);								\
-							fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: refcounted: added\n");
-						}
-					} while (0);
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_COPY: done\n");
+					ZVAL_COPY(param, arg);
 				} else {
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: Z_TRY_ADDREF_P: attempt\n");
 					Z_TRY_ADDREF_P(arg);
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: Z_TRY_ADDREF_P: done and then ZVAL_NEW_REF\n");
 					ZVAL_NEW_REF(param, arg);
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: ZVAL_NEW_REF: done\n");
 				}
 				if (!name) {
-					fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: increment arg pointers/indices\n");
 					ZEND_CALL_NUM_ARGS(EX(call))++;
 					arg_num++;
 					param++;
 				}
-				fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: end of one foreach iteration\n");
 			} ZEND_HASH_FOREACH_END();
 		}
 	}
 	FREE_OP(opline->op1_type, opline->op1.var);
-	fprintf(stderr, "ZEND_SEND_ARRAY_SPEC_HANDLER: returning: %s\n", ZSTR_VAL(EX(call)->func->common.function_name));
 	ZEND_VM_NEXT_OPCODE_CHECK_EXCEPTION();
 }
 
