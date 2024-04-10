@@ -713,11 +713,14 @@ static void *zend_mm_chunk_alloc_int(size_t size, size_t alignment)
 
 static void *zend_mm_chunk_alloc(zend_mm_heap *heap, size_t size, size_t alignment)
 {
+	fprintf(stderr, "zend_mm_chunk_alloc: called\n");
 	void* ptr = NULL;
 	if (posix_memalign(&ptr, alignment, size) == 0)
 	{
+		fprintf(stderr, "zend_mm_chunk_alloc: %p size=%zu alignment=%zu\n", ptr, size, alignment);
 		return ptr;
 	} else {
+		fprintf(stderr, "zend_mm_chunk_alloc: NULL\n");
 		return NULL;
 	}
 
@@ -733,7 +736,9 @@ static void *zend_mm_chunk_alloc(zend_mm_heap *heap, size_t size, size_t alignme
 
 static void zend_mm_chunk_free(zend_mm_heap *heap, void *addr, size_t size)
 {
+	fprintf(stderr, "zend_mm_chunk_free: %p size=%zu\n", addr, size);
 	free(addr);
+	fprintf(stderr, "zend_mm_chunk_free: returning\n");
 	return;
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
@@ -746,6 +751,7 @@ static void zend_mm_chunk_free(zend_mm_heap *heap, void *addr, size_t size)
 
 static int zend_mm_chunk_truncate(zend_mm_heap *heap, void *addr, size_t old_size, size_t new_size)
 {
+	fprintf(stderr, "zend_mm_chunk_truncate: rejecting request: %p old_size=%zu new_size=%zu\n", addr, old_size, new_size);
 	return false;
 #if ZEND_MM_STORAGE
 	if (UNEXPECTED(heap->storage)) {
@@ -766,6 +772,7 @@ static int zend_mm_chunk_truncate(zend_mm_heap *heap, void *addr, size_t old_siz
 
 static int zend_mm_chunk_extend(zend_mm_heap *heap, void *addr, size_t old_size, size_t new_size)
 {
+	fprintf(stderr, "zend_mm_chunk_extend: rejecting request: %p old_size=%zu new_size=%zu\n", addr, old_size, new_size);
 	return false;
 
 #if ZEND_MM_STORAGE
