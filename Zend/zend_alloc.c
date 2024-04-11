@@ -718,6 +718,7 @@ static void *zend_mm_chunk_alloc(zend_mm_heap *heap, size_t size, size_t alignme
 	if (posix_memalign(&ptr, alignment, size) == 0)
 	{
 		fprintf(stderr, "zend_mm_chunk_alloc: %p size=%zu alignment=%zu\n", ptr, size, alignment);
+		memset(ptr, 0, size);
 		return ptr;
 	} else {
 		fprintf(stderr, "zend_mm_chunk_alloc: NULL\n");
